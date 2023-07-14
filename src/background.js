@@ -308,7 +308,7 @@ export default class BzJira {
     ) {
       let matchingData = true;
 
-      for (const [key, value] of Object.entries(comparisonData)) {
+      for (const value of Object.values(comparisonData)) {
         if (value.matches === false) {
           matchingData = false;
           break;

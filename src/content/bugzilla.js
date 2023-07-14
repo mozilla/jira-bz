@@ -108,7 +108,7 @@ export default class BZContent {
     // Prospectively create the column since to minimize jank.
     const header = document.createElement('th');
     header.id = 'bz-jira-table-header';
-    const headerText = (header.textContent = 'Jira Link');
+    header.textContent = 'Jira Link';
 
     // This should be enough width to allow for a JIRA link code of
     // XXXXXX-XXX so that the page doesn't move around when the data has loaded.
@@ -165,7 +165,6 @@ export default class BZContent {
     // There might be more than one jira issue.
     const jiraIssueIds = [];
     if (jiraIssueData?.length) {
-      const comparisonDataRequests = [];
       for (let link of jiraIssueData) {
         const jiraSpan = document.createElement('span');
         jiraSpan.setAttribute('id', `jira-bz-buglink-${bugId}`);
@@ -197,7 +196,7 @@ export default class BZContent {
     this.whiteboardTagging();
   }
 
-  whiteboardTagging(_window = window) {
+  whiteboardTagging() {
     const componentSelect = document.getElementById('component');
     const component = componentSelect?.value;
     const buttonId = 'bz-jira-whiteboard-button';
@@ -207,7 +206,7 @@ export default class BZContent {
     // as needed.
     componentSelect?.addEventListener(
       'change',
-      (e) => {
+      () => {
         this.whiteboardTagging();
       },
       { once: true },
@@ -265,7 +264,7 @@ export default class BZContent {
       checkExisting(e);
     };
 
-    const checkExisting = function (e) {
+    const checkExisting = function () {
       if (whiteBoardInput.value.includes(wbSelect.value)) {
         button.setAttribute('disabled', true);
       } else {
