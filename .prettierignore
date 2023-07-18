@@ -5,6 +5,7 @@
 /dist-zip/
 /dist/
 LICENSE
+/src/vendor/
 # safe-list files we want to process
 !*.html
 !*.js
