@@ -11,13 +11,27 @@ const projectRoot = path.join(__dirname, '../');
 import esbuild from 'esbuild';
 
 async function main() {
-  const componentsJSONPath = path.join(
+  const productsByClassificationJSONPath = path.join(
     projectRoot,
-    'src/data/componentsByProduct.json',
+    'src/data/productsByClassification.json',
+  );
+
+  const componentsByProductIdJSONPath = path.join(
+    projectRoot,
+    'src/data/componentsByProductID.json',
+  );
+
+  const componentsByProductNameJSONPath = path.join(
+    projectRoot,
+    'src/data/componentsByProductName.json',
   );
 
   await esbuild.build({
-    entryPoints: [componentsJSONPath],
+    entryPoints: [
+      productsByClassificationJSONPath,
+      componentsByProductIdJSONPath,
+      componentsByProductNameJSONPath,
+    ],
     bundle: true,
     format: 'esm',
     outdir: path.join(projectRoot, 'src/data'),

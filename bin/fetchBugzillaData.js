@@ -13,11 +13,11 @@ const productAPIURL = 'https://bugzilla.mozilla.org/rest/classification/';
 const componentAPIURL = 'https://bugzilla.mozilla.org/rest/product/';
 
 export const classifications = [
-  { name: 'Client Software', id: 2 },
-  { name: 'Developer Infrastructure', id: 7 },
-  { name: 'Components', id: 3 },
-  { name: 'Server Software', id: 4 },
-  { name: 'Other', id: 5 },
+  { name: 'Client Software', id: '2' },
+  // { name: 'Developer Infrastructure', id: 7 },
+  { name: 'Components', id: '3' },
+  // { name: 'Server Software', id: 4 },
+  // { name: 'Other', id: 5 },
 ];
 
 async function main() {
@@ -37,12 +37,12 @@ async function main() {
     const result = json.classifications[0];
 
     const products = result.products.map((prod) => ({
-      id: prod.id,
+      id: prod.id.toString(),
       name: prod.name,
     }));
 
-    productData[result.name] = {
-      id: result.id,
+    productData[result.id] = {
+      name: result.name,
       products,
     };
 
@@ -53,41 +53,51 @@ async function main() {
     }
   }
 
-  const componentResults = await Promise.all(componentFetches);
-
-  const componentData = {};
-  for await (const json of componentResults.map((response) =>
-    response.json(),
-  )) {
-    const result = json.products[0];
-
-    // Include only the fields needed.
-    const components = result.components.map((comp) => ({
-      id: comp.id,
-      name: comp.name,
-    }));
-
-    componentData[result.name] = {
-      id: result.id,
-      components,
-    };
-  }
-
-  // Write out a Products JSON file in src/data/
+  // Write out a productsByClassification JSON file in src/data/
   try {
     await writeFile(
-      path.join(projectRoot, 'src/data/products.json'),
+      path.join(projectRoot, 'src/data/productsByClassification.json'),
       JSON.stringify(productData, null, 2),
     );
   } catch (err) {
     console.error(err);
   }
 
-  // Write out a Components JSON file in src/data/
+  const componentResults = await Promise.all(componentFetches);
+
+  const componentDataByID = {};
+  const componentDataByName = {};
+
+  for await (const json of componentResults.map((response) =>
+    response.json(),
+  )) {
+    const result = json.products[0];
+    const componentsMap = {};
+    const components = result.components.map((comp) => {
+      componentsMap[comp.name] = comp.id;
+      return {
+        id: comp.id.toString(),
+        name: comp.name,
+      };
+    });
+
+    componentDataByID[result.id] = {
+      name: result.name,
+      components,
+    };
+
+    componentDataByName[result.name] = componentsMap;
+  }
+
+  // Write out a componentsByProduct JSON file in src/data/
   try {
     await writeFile(
-      path.join(projectRoot, 'src/data/components.json'),
-      JSON.stringify(componentData, null, 2),
+      path.join(projectRoot, 'src/data/componentsByProductID.json'),
+      JSON.stringify(componentDataByID, null, 2),
+    );
+    await writeFile(
+      path.join(projectRoot, 'src/data/componentsByProductName.json'),
+      JSON.stringify(componentDataByName, null, 2),
     );
   } catch (err) {
     console.error(err);

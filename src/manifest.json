@@ -51,7 +51,7 @@
       "resources": [
         "icons/*",
         "shared/*",
-        "vendor/lit-html/*",
+        "data/componentsByProductName.js",
         "content/bugzilla.js"
       ],
       "matches": [

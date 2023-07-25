@@ -8,9 +8,9 @@ const config = {
     'https://mozilla-hub.atlassian.net/rest/api/latest/issue/',
   JIRA_URL_RX: /^https:\/\/mozilla-hub.atlassian.net\/browse\/([A-Z-0-9]+)$/,
   EXT_ID: browser.runtime.getManifest().browser_specific_settings.gecko.id,
-  COMPONENT_JIRA_WHITEBOARD_MAP: {
-    'Firefox View': ['[fidefe-firefox-view]', '[fidefe-fxview-backlog]'],
-    'XUL Widgets': ['[fidefe-reusable-components]'],
+  WHITEBOARD_TAGS_COMPONENT_MAP: {
+    2841: ['[fidefe-firefox-view]', '[fidefe-fxview-backlog]'],
+    487: ['[fidefe-reusable-components]'],
   },
 };
 

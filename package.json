@@ -25,6 +25,7 @@
     "start": "web-ext run --keep-profile-changes --source-dir ./src/ --pref extensions.manifestV3.enabled=true --firefox='beta'",
     "build": "web-ext build --source-dir ./src/",
     "build:lit": "esbuild ./node_modules/lit/index.js --bundle --format=esm --outfile=./src/vendor/lit.js",
+    "build:bugzilla-data": "bin/fetchBugzillaData.js && bin/buildBugzillaData.js",
     "build-updates-json": "bin/buildUpdatesJSON.js",
     "release": "bin/bumpRelease.js",
     "test-updates-json": "bin/testUpdatesJSON.js",

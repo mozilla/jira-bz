@@ -156,6 +156,7 @@ describe('Bugzilla Content Script', () => {
 
   describe('initBuglist()', () => {
     beforeEach(() => {
+      // eslint-disable-next-line no-global-assign
       fetch = jest.fn();
       const mockJson = jest.fn();
       mockJson.mockReturnValue({
@@ -183,7 +184,7 @@ describe('Bugzilla Content Script', () => {
       </tr></thead></table>`;
       document.body.innerHTML = tableAlreadyUpdated;
 
-      const result = await BZContent.initBuglist();
+      await BZContent.initBuglist();
       expect(document.body.innerHTML).toEqual(tableAlreadyUpdated);
     });
 
@@ -256,6 +257,7 @@ describe('Bugzilla Content Script', () => {
     };
 
     beforeEach(() => {
+      // eslint-disable-next-line no-global-assign
       fetch = jest.fn();
       const mockJson = jest.fn();
       mockJson.mockReturnValue({
@@ -286,7 +288,7 @@ describe('Bugzilla Content Script', () => {
         <a href="/show_bug.cgi?id=123456789">Bug 123456789</a>
       </span>`;
 
-      const result = await BZContent.initBug(fakeWindow);
+      await BZContent.initBug(fakeWindow);
       expect(
         document.querySelectorAll('#jira-bz-buglink-123456789').length,
       ).toEqual(1);
@@ -297,7 +299,7 @@ describe('Bugzilla Content Script', () => {
         <a href="/show_bug.cgi?id=123456789">Bug 123456789</a>
       </span>`;
 
-      const result = await BZContent.initBug(fakeWindow);
+      await BZContent.initBug(fakeWindow);
       expect(
         !!document
           .getElementById('field-value-bug_id')
@@ -307,8 +309,15 @@ describe('Bugzilla Content Script', () => {
   });
 
   describe('whiteboardTagging()', () => {
+    let labelText = 'Choose Tag:';
+
     beforeEach(() => {
       document.body.innerHTML = `
+        <select name="product" id="product" aria-labelledby="product-help-link">
+          <option value="Fenix">Fenix</option>
+          <option value="Firefox" selected="">Firefox</option>
+        </select>
+
         <select name="component" id="component" aria-labelledby="component-help-link">
            <option value="about:logins">about:logins</option>
            <option value="Firefox View" selected="">Firefox View</option>
@@ -317,33 +326,31 @@ describe('Bugzilla Content Script', () => {
         <input name="status_whiteboard" id="status_whiteboard" value="" aria-labelledby="status_whiteboard-help-link">
       `;
 
-      BZContent.getWhiteboardConfigForComponent = jest.fn();
-      BZContent.getWhiteboardConfigForComponent.mockReturnValue([
+      BZContent.getTagsForProductAndComponent = jest.fn();
+      BZContent.getTagsForProductAndComponent.mockResolvedValue([
         '[fidefe-test-one]',
         '[fidefe-test-two]',
       ]);
     });
 
     it(`should add a select to add a whiteboard tag if there's a config`, async () => {
-      BZContent.whiteboardTagging();
+      await BZContent.whiteboardTagging();
       await waitFor(() => {
         expect(
           getByText(document.body, '[fidefe-test-one]'),
         ).toBeInTheDocument();
-        expect(
-          getByText(document.body, 'Add Jira Whiteboard Tag'),
-        ).toBeInTheDocument();
+        expect(getByText(document.body, labelText)).toBeInTheDocument();
       });
     });
 
     it(`should remove the select and button if there's no config`, async () => {
-      BZContent.whiteboardTagging();
+      await BZContent.whiteboardTagging();
       const component = document.getElementById('component');
       const option = document.querySelector(
         '#component option[value="about:logins"]',
       );
       component.value = option.value;
-      BZContent.getWhiteboardConfigForComponent.mockReturnValue(null);
+      BZContent.getTagsForProductAndComponent.mockResolvedValue(null);
 
       fireEvent.change(component);
 
@@ -351,33 +358,27 @@ describe('Bugzilla Content Script', () => {
         expect(
           queryByText(document.body, '[fidefe-test-one]'),
         ).not.toBeInTheDocument();
-        expect(
-          queryByText(document.body, 'Add Jira Whiteboard Tag'),
-        ).not.toBeInTheDocument();
+        expect(queryByText(document.body, labelText)).not.toBeInTheDocument();
       });
     });
 
     it('should only add one select if called multiple times', async () => {
-      BZContent.whiteboardTagging();
-      BZContent.whiteboardTagging();
+      await BZContent.whiteboardTagging();
+      await BZContent.whiteboardTagging();
       await waitFor(() => {
         expect(getAllByText(document.body, '[fidefe-test-one]').length).toBe(1);
-        expect(
-          getAllByText(document.body, 'Add Jira Whiteboard Tag').length,
-        ).toBe(1);
+        expect(getAllByText(document.body, labelText).length).toBe(1);
       });
     });
 
     it('should disable the button if the selected string is already added', async () => {
-      BZContent.whiteboardTagging();
+      await BZContent.whiteboardTagging();
       let button;
       await waitFor(() => {
         expect(
           getByText(document.body, '[fidefe-test-one]'),
         ).toBeInTheDocument();
-        expect(
-          (button = getByText(document.body, 'Add Jira Whiteboard Tag')),
-        ).toBeInTheDocument();
+        expect((button = getByText(document.body, 'Add'))).toBeInTheDocument();
       });
 
       fireEvent.click(button);
@@ -396,7 +397,7 @@ describe('Bugzilla Content Script', () => {
           getByText(document.body, '[fidefe-test-one]'),
         ).toBeInTheDocument();
         expect(
-          (button = getByText(document.body, 'Add Jira Whiteboard Tag')),
+          (button = getByText(document.body, labelText)),
         ).toBeInTheDocument();
       });
 
