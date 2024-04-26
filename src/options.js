@@ -91,7 +91,7 @@ export class Options extends LitElement {
   `;
 
   static properties = {
-    _classifications: { statue: true, type: Array },
+    _classifications: { state: true, type: Array },
     _products: { state: true, type: Array },
     _components: { state: true, type: Array },
     _selectedProductID: { state: true, type: String },
@@ -199,20 +199,49 @@ export class Options extends LitElement {
     </button>`;
   }
 
+  getSelectedName(selectSelector) {
+    return this.shadowRoot
+      .querySelector(selectSelector)
+      ?.selectedOptions[0]?.textContent?.trim();
+  }
+
+  getSelectedProductName() {
+    return this.getSelectedName('#product');
+  }
+
+  getSelectedComponentName() {
+    return this.getSelectedName('#component');
+  }
+
+  inputsAreValid() {
+    let isValid = true;
+    const tagInputs = [...this.renderRoot.querySelectorAll('input.tag')];
+    for (const input of tagInputs) {
+      if (input.checkValidity() === false) {
+        isValid = false;
+        break;
+      }
+    }
+    console.log(isValid);
+    return isValid;
+  }
+
   render() {
     const selectSize = 5;
 
     return html` <h2>Options</h2>
       <h3>Whiteboard Tags</h3>
       <p class="help">
-        Pick a product and component to edit the available tags for
+        Pick a classification, product and component to edit the available tags
+        for it:
       </p>
 
       <div class="classifications selectWrapper">
-        <label for="product">Classification</label>
+        <label for="classification">Classification</label>
         <select
           size=${selectSize}
           id="classification"
+          data-testid="classification"
           @change=${this.onClassificationChange}
         >
           ${this._classifications.map(
@@ -230,7 +259,12 @@ export class Options extends LitElement {
 
       <div class="products selectWrapper">
         <label for="product">Product</label>
-        <select size=${selectSize} id="product" @change=${this.onProductChange}>
+        <select
+          size=${selectSize}
+          data-testid="product"
+          id="product"
+          @change=${this.onProductChange}
+        >
           ${this._products.map(
             (product) =>
               html`<option
@@ -248,6 +282,7 @@ export class Options extends LitElement {
         <select
           size="${selectSize}"
           id="component"
+          data-testid="component"
           @change=${this.onComponentChange}
         >
           ${!this._components.length
@@ -269,7 +304,7 @@ export class Options extends LitElement {
         ? html`<p class="help">Please select a component</p>`
         : html`<p class="help">
             Add or Edit whiteboard tags for
-            "<code>${this._selectedProduct}/${this._selectedComponent}</code>"
+            "<code>${this.getSelectedProductName()}/${this.getSelectedComponentName()}</code>"
             below:
           </p>`}
       ${this._tagList.map(
@@ -279,7 +314,7 @@ export class Options extends LitElement {
               placeholder="[project-anything-else]"
               type="text"
               value=${tag}
-              pattern="\\u{005B}[a-z0-9-_.]+\\u{005D}"
+              pattern="\\[[a-z0-9\\-_.]+\\]"
             />
             ${this._tagList.length > 1 ? this.renderRemoveButton(idx) : ''}
           </div>
@@ -289,7 +324,7 @@ export class Options extends LitElement {
         ? html`<div class="tagActions">
             <button
               id="saveTags"
-              ?disabled=${!this._selectedComponentID}
+              ?disabled=${!this.inputsAreValid()}
               @click=${this.onTagsSave}
             >
               Save Whiteboard Tags

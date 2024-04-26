@@ -76,6 +76,10 @@ var _2 = {
   name: 'Components',
   products: [
     {
+      id: '210',
+      name: 'Application Services',
+    },
+    {
       id: '115',
       name: 'Chat Core',
     },

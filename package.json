@@ -18,11 +18,12 @@
     "prettier": "^2.8.8",
     "pretty-quick": "^3.1.3",
     "semver": "^7.6.0",
-    "web-ext": "^7.6.0"
+    "shadow-dom-testing-library": "^1.11.0",
+    "web-ext": "^7.11.0"
   },
   "scripts": {
     "lint": "eslint 'src/**/*.{js,mjs}' 'bin/*.js'",
-    "start": "web-ext run --keep-profile-changes --source-dir ./src/ --pref extensions.manifestV3.enabled=true --firefox='beta'",
+    "start": "web-ext run --keep-profile-changes --source-dir ./src/ --firefox='beta'",
     "build": "web-ext build --source-dir ./src/",
     "build:lit": "esbuild ./node_modules/lit/index.js --bundle --format=esm --outfile=./src/vendor/lit.js",
     "build:bugzilla-data": "bin/fetchBugzillaData.js && bin/buildBugzillaData.js",

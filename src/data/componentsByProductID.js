@@ -3,10 +3,6 @@ var _ = {
   name: 'Core',
   components: [
     {
-      id: '2798',
-      name: 'Applied Machine Learning',
-    },
-    {
       id: '754',
       name: 'Audio/Video',
     },
@@ -127,7 +123,7 @@ var _ = {
       name: 'DOM: Networking',
     },
     {
-      id: '1785',
+      id: '2935',
       name: 'DOM: Notifications',
     },
     {
@@ -137,6 +133,10 @@ var _ = {
     {
       id: '2742',
       name: 'DOM: postMessage',
+    },
+    {
+      id: '1785',
+      name: 'DOM: Push Subscriptions',
     },
     {
       id: '1956',
@@ -343,6 +343,10 @@ var _ = {
       name: 'Layout: Text and Fonts',
     },
     {
+      id: '2928',
+      name: 'Machine Learning',
+    },
+    {
       id: '134',
       name: 'MathML',
     },
@@ -375,16 +379,8 @@ var _ = {
       name: 'Networking: DNS',
     },
     {
-      id: '979',
-      name: 'Networking: Domain Lists',
-    },
-    {
       id: '194',
       name: 'Networking: File',
-    },
-    {
-      id: '187',
-      name: 'Networking: FTP',
     },
     {
       id: '186',
@@ -393,6 +389,10 @@ var _ = {
     {
       id: '588',
       name: 'Networking: JAR',
+    },
+    {
+      id: '2932',
+      name: 'Networking: Proxy',
     },
     {
       id: '1109',
@@ -469,6 +469,10 @@ var _ = {
     {
       id: '2885',
       name: 'Spelling Checker: en-US Dictionary',
+    },
+    {
+      id: '2936',
+      name: 'Storage: Bucket File System',
     },
     {
       id: '2743',
@@ -1353,24 +1357,16 @@ var _1 = {
       name: 'about:logins',
     },
     {
-      id: '2374',
-      name: 'Activity Streams: General',
-    },
-    {
-      id: '2377',
-      name: 'Activity Streams: Server Operations',
-    },
-    {
-      id: '2376',
-      name: 'Activity Streams: Timeline',
-    },
-    {
       id: '294',
       name: 'Address Bar',
     },
     {
       id: '277',
       name: 'Bookmarks & History',
+    },
+    {
+      id: '2913',
+      name: 'Data Loss Prevention',
     },
     {
       id: '408',
@@ -1481,6 +1477,10 @@ var _1 = {
       name: 'Private Browsing',
     },
     {
+      id: '2933',
+      name: 'Profile Backup',
+    },
+    {
       id: '2388',
       name: 'Protections UI',
     },
@@ -1515,6 +1515,10 @@ var _1 = {
     {
       id: '2903',
       name: 'Shopping',
+    },
+    {
+      id: '2931',
+      name: 'Sidebar',
     },
     {
       id: '2428',
@@ -1554,7 +1558,7 @@ var _1 = {
     },
     {
       id: '2007',
-      name: 'Translation',
+      name: 'Translations',
     },
     {
       id: '1363',
@@ -1937,10 +1941,6 @@ var _0 = {
       name: 'IOUtils and PathUtils',
     },
     {
-      id: '554',
-      name: 'NSIS Installer',
-    },
-    {
       id: '358',
       name: 'Password Manager',
     },
@@ -2005,6 +2005,10 @@ var _0 = {
       name: 'Toolbars and Toolbar Customization',
     },
     {
+      id: '487',
+      name: 'UI Widgets',
+    },
+    {
       id: '2843',
       name: 'UniFFI Bindings',
     },
@@ -2015,10 +2019,6 @@ var _0 = {
     {
       id: '387',
       name: 'View Source',
-    },
-    {
-      id: '487',
-      name: 'XUL Widgets',
     },
   ],
 };
@@ -2088,6 +2088,10 @@ var _72 = {
     {
       id: '2525',
       name: 'mozscreenshots',
+    },
+    {
+      id: '2911',
+      name: 'PerfCompare',
     },
     {
       id: '2656',
@@ -2701,10 +2705,6 @@ var _522 = {
   name: 'Web Compatibility',
   components: [
     {
-      id: '2678',
-      name: 'Desktop',
-    },
-    {
       id: '2425',
       name: 'Interventions',
     },
@@ -2713,8 +2713,8 @@ var _522 = {
       name: 'Knowledge Base',
     },
     {
-      id: '2679',
-      name: 'Mobile',
+      id: '2678',
+      name: 'Site Reports',
     },
     {
       id: '2431',
@@ -3020,6 +3020,10 @@ var _82 = {
       name: 'Crash Reporting',
     },
     {
+      id: '2926',
+      name: 'Design System and Theming',
+    },
+    {
       id: '2853',
       name: 'Downloads',
     },
@@ -3042,6 +3046,10 @@ var _82 = {
     {
       id: '2857',
       name: 'Logins',
+    },
+    {
+      id: '2937',
+      name: 'Media',
     },
     {
       id: '2858',
@@ -3092,8 +3100,16 @@ var _82 = {
       name: 'Toolbar',
     },
     {
+      id: '2927',
+      name: 'Tooling',
+    },
+    {
       id: '2869',
       name: 'Top Sites',
+    },
+    {
+      id: '2912',
+      name: 'Translations',
     },
     {
       id: '2883',
@@ -3189,6 +3205,63 @@ var _08 = {
     },
   ],
 };
+var _10 = {
+  name: 'Application Services',
+  components: [
+    {
+      id: '2918',
+      name: 'Autofill',
+    },
+    {
+      id: '2919',
+      name: 'Fxa Client',
+    },
+    {
+      id: '2916',
+      name: 'General',
+    },
+    {
+      id: '2920',
+      name: 'Logins',
+    },
+    {
+      id: '2921',
+      name: 'Places',
+    },
+    {
+      id: '2922',
+      name: 'Push',
+    },
+    {
+      id: '2934',
+      name: 'Relevancy',
+    },
+    {
+      id: '2930',
+      name: 'Remote Settings',
+    },
+    {
+      id: '2929',
+      name: 'Suggest',
+    },
+    {
+      id: '2917',
+      name: 'Support',
+    },
+    {
+      id: '2923',
+      name: 'Sync',
+    },
+    {
+      id: '2924',
+      name: 'Tabs',
+    },
+    {
+      id: '2925',
+      name: 'Webext Storage',
+    },
+  ],
+};
 var componentsByProductID_default = {
   1: _,
   2: _2,
@@ -3221,6 +3294,7 @@ var componentsByProductID_default = {
   198: _98,
   202: _022,
   208: _08,
+  210: _10,
 };
 export {
   _ as '1',
@@ -3244,6 +3318,7 @@ export {
   _022 as '202',
   _08 as '208',
   _1 as '21',
+  _10 as '210',
   _32 as '23',
   _5 as '25',
   _8 as '28',

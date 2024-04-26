@@ -16,6 +16,7 @@ module.exports = {
     'arrow-body-style': 'off',
   },
   globals: {
+    global: true,
     Set: true,
     Promise: true,
     module: true,

@@ -3,7 +3,6 @@ import {
   getByText,
   getByTestId,
   queryByTestId,
-  findByText,
   waitFor,
 } from '@testing-library/dom';
 import '@testing-library/jest-dom';
