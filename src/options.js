@@ -16,6 +16,10 @@ export const classifications = [
 
 export class Options extends LitElement {
   static styles = css`
+    .options {
+      position: relative;
+    }
+
     h3 {
       margin-bottom: 0.25em;
     }
@@ -66,6 +70,17 @@ export class Options extends LitElement {
       color: red;
     }
 
+    .status {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      background: green;
+      border-radius: 0.5em;
+      color: #fff;
+      margin: 0.5em 0;
+      padding: 0.5em;
+    }
+
     select {
       max-width: 100%;
     }
@@ -98,6 +113,8 @@ export class Options extends LitElement {
     _selectedComponentID: { state: true, type: String },
     _selectedClassificationID: { state: true, type: String },
     _tagList: { state: true, type: Array },
+    _tagsSaved: { state: true, type: Boolean },
+    submitDisabled: { type: Boolean },
   };
 
   constructor() {
@@ -109,6 +126,8 @@ export class Options extends LitElement {
     this._selectedProductID = defaultProductID;
     this._selectedComponentID = null;
     this._tagList = [];
+    this._tagsSaved = false;
+    this.submitDisabled = true;
   }
 
   async getTagsForComponentID(componentID) {
@@ -151,6 +170,7 @@ export class Options extends LitElement {
     const tags = await this.getTagsForComponentID(value);
     this._tagList = tags && tags.length ? this.filterTags(tags) : [''];
     this._selectedComponentID = this.isValidID(value) ? value : null;
+    this.submitDisabled = true;
   }
 
   filterTags(tagList) {
@@ -158,7 +178,7 @@ export class Options extends LitElement {
     return tagList.filter((tag) => tagRx.test(tag));
   }
 
-  onTagsSave() {
+  async onTagsSave() {
     const tagInputs = [
       ...(this.renderRoot?.querySelectorAll('input.tag') || []),
     ];
@@ -169,7 +189,23 @@ export class Options extends LitElement {
     const tagKey = `tag_${this._selectedComponentID}`;
 
     // Store the data locally.
-    browser.storage.local.set({ [tagKey]: newComponentTags });
+    try {
+      await browser.storage.local.set({ [tagKey]: newComponentTags });
+      this._tagsSaved = true;
+      // make the submit button disabled until there are new changes.
+      this.submitDisabled = true;
+
+      window.setTimeout(() => {
+        this._tagsSaved = false;
+        this.requestUpdate();
+      }, 5000);
+    } catch (e) {
+      this._tagsSaved = false;
+    }
+  }
+
+  setSubmitDisabledState() {
+    this.submitDisabled = this.inputsAreValid() === false;
   }
 
   addEmptyTag() {
@@ -179,6 +215,7 @@ export class Options extends LitElement {
 
   removeTag(idx) {
     this._tagList.splice(idx, 1);
+    this.setSubmitDisabledState();
     this.requestUpdate();
   }
 
@@ -217,19 +254,26 @@ export class Options extends LitElement {
     let isValid = true;
     const tagInputs = [...this.renderRoot.querySelectorAll('input.tag')];
     for (const input of tagInputs) {
+      if (input.value === '') {
+        isValid = false;
+        break;
+      }
       if (input.checkValidity() === false) {
         isValid = false;
         break;
       }
     }
-    console.log(isValid);
     return isValid;
   }
 
   render() {
     const selectSize = 5;
 
-    return html` <h2>Options</h2>
+    return html`${this._tagsSaved
+        ? html`<div role="status" class="status">Whiteboard Tags Saved</div>`
+        : ''}
+
+      <h2>Options</h2>
       <h3>Whiteboard Tags</h3>
       <p class="help">
         Pick a classification, product and component to edit the available tags
@@ -307,24 +351,27 @@ export class Options extends LitElement {
             "<code>${this.getSelectedProductName()}/${this.getSelectedComponentName()}</code>"
             below:
           </p>`}
-      ${this._tagList.map(
-        (tag, idx) => html`<div class="row">
+      ${this._tagList.map((tag, idx) => {
+        return html`<div class="row">
             <input
+              id="${this._selectedComponentID}-${idx}"
               class="tag"
               placeholder="[project-anything-else]"
               type="text"
-              value=${tag}
+              .value=${tag}
               pattern="\\[[a-z0-9\\-_.]+\\]"
+              @keyup=${this.setSubmitDisabledState}
             />
             ${this._tagList.length > 1 ? this.renderRemoveButton(idx) : ''}
           </div>
-          ${idx === this._tagList.length - 1 ? this.renderAddButton() : ''}`,
-      )}
+          ${idx === this._tagList.length - 1 ? this.renderAddButton() : ''}`;
+      })}
       ${this._tagList.length
         ? html`<div class="tagActions">
             <button
               id="saveTags"
-              ?disabled=${!this.inputsAreValid()}
+              autocomplete="off"
+              ?disabled=${this.submitDisabled}
               @click=${this.onTagsSave}
             >
               Save Whiteboard Tags
