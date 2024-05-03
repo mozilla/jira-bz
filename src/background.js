@@ -8,6 +8,11 @@ export default class BzJira {
 
   checkPriorityMap(jira, bz) {
     if (this.checkStrings(jira, bz)) {
+      // Newer Jira priorities are an exact match.
+      if (jira === bz) {
+        return true;
+      }
+      // Older priorities need a mapping.
       const priorityMap = {
         highest: 'P1',
         high: 'P2',
@@ -308,7 +313,7 @@ export default class BzJira {
     ) {
       let matchingData = true;
 
-      for (const [key, value] of Object.entries(comparisonData)) {
+      for (const value of Object.values(comparisonData)) {
         if (value.matches === false) {
           matchingData = false;
           break;

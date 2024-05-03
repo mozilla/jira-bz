@@ -36,6 +36,11 @@ describe('Background Script', () => {
       expect(BzJira.checkPriorityMap('Low', 'P4')).toBe(true);
       expect(BzJira.checkPriorityMap('Lowest', 'P5')).toBe(true);
       expect(BzJira.checkPriorityMap('(none)', '--')).toBe(true);
+      expect(BzJira.checkPriorityMap('P1', 'P1')).toBe(true);
+      expect(BzJira.checkPriorityMap('P2', 'P2')).toBe(true);
+      expect(BzJira.checkPriorityMap('P3', 'P3')).toBe(true);
+      expect(BzJira.checkPriorityMap('P4', 'P4')).toBe(true);
+      expect(BzJira.checkPriorityMap('P5', 'P5')).toBe(true);
     });
 
     it('should be false', () => {

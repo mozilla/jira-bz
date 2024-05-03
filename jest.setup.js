@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'module';
 import { jest } from '@jest/globals';
 
 /*

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
+import process from 'node:process';
 import path from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import confirm from '@inquirer/confirm';
 import select from '@inquirer/select';
 import { inc } from 'semver';
 

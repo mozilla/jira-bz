@@ -4,6 +4,7 @@
  * Helper script that builds an update file based on the manifest.json.
  */
 
+import process from 'node:process';
 import path from 'node:path';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';

@@ -1,11 +1,8 @@
 import config from '../shared/config.js';
 import * as util from '../shared/util.js';
+import componentsByProductName from '../data/componentsByProductName.js';
 
 export default class BZContent {
-  getWhiteboardConfigForComponent(component) {
-    return config.COMPONENT_JIRA_WHITEBOARD_MAP[component] || null;
-  }
-
   /*
    * Finds the REST url from the API link in the page if it exists.
    */
@@ -108,7 +105,7 @@ export default class BZContent {
     // Prospectively create the column since to minimize jank.
     const header = document.createElement('th');
     header.id = 'bz-jira-table-header';
-    const headerText = (header.textContent = 'Jira Link');
+    header.textContent = 'Jira Link';
 
     // This should be enough width to allow for a JIRA link code of
     // XXXXXX-XXX so that the page doesn't move around when the data has loaded.
@@ -165,7 +162,6 @@ export default class BZContent {
     // There might be more than one jira issue.
     const jiraIssueIds = [];
     if (jiraIssueData?.length) {
-      const comparisonDataRequests = [];
       for (let link of jiraIssueData) {
         const jiraSpan = document.createElement('span');
         jiraSpan.setAttribute('id', `jira-bz-buglink-${bugId}`);
@@ -197,63 +193,84 @@ export default class BZContent {
     this.whiteboardTagging();
   }
 
-  whiteboardTagging(_window = window) {
+  async getTagsForProductAndComponent(product, component) {
+    // Stored data is keyed by ID so that we don't have to migrate
+    // data if text keys changes. Instead we can do a extension update
+    // to fix the text->id mapping.
+    const componentID = componentsByProductName[product][component];
+
+    // Check a componentID and it's parseable as an int.
+    if (componentID && !isNaN(parseInt(componentID, 10))) {
+      const tagKey = `tag_${componentID}`;
+      const result = await browser.storage.local.get(tagKey);
+      return result[tagKey];
+    }
+  }
+
+  async whiteboardTagging() {
+    const productSelect = document.getElementById('product');
+    const product = productSelect?.value;
+
     const componentSelect = document.getElementById('component');
     const component = componentSelect?.value;
+
+    const labelId = 'bz-jira-whiteboard-label';
     const buttonId = 'bz-jira-whiteboard-button';
     const selectId = 'bz-jira-whiteboard-select';
 
     // Listen to component changes so this can be re-initialized
     // as needed.
-    componentSelect?.addEventListener(
-      'change',
-      (e) => {
-        this.whiteboardTagging();
-      },
-      { once: true },
-    );
+    componentSelect?.addEventListener('change', () => {
+      this.whiteboardTagging();
+    });
+
+    // Remove the existing selects if they're present.
+    document.getElementById(buttonId)?.remove();
+    document.getElementById(selectId)?.remove();
+    document.getElementById(labelId)?.remove();
 
     // If there's no component there's no point going further.
-    if (!component) {
+    if (!component || !product) {
       return;
     }
 
-    const whiteboardConfig = this.getWhiteboardConfigForComponent(component);
+    const tags = await this.getTagsForProductAndComponent(product, component);
 
-    // If there's no whiteboardConfig matching the component, remove the select
+    // If there's no tags matching the component, remove the select
     // and button and return early since there's nothing to add.
-    if (!whiteboardConfig) {
-      document.getElementById(buttonId)?.remove();
-      document.getElementById(selectId)?.remove();
+    if (!tags) {
       return;
     }
 
     const whiteBoardInput = document.getElementById('status_whiteboard');
-
-    // Return early if there's no whiteboard input, or the select has already been
-    // added.
-    if (!whiteBoardInput || document.getElementById(selectId)) {
-      console.log('no-op');
+    // Return early if there's no whiteboard input.
+    if (!whiteBoardInput) {
+      console.log(`Bailing as there's no whiteboard input`);
       return;
     }
 
     // Build the select
+    const selectLabel = document.createElement('label');
+    selectLabel.setAttribute('id', labelId);
+    selectLabel.setAttribute('for', selectId);
+    selectLabel.textContent = 'Choose Tag: ';
     const wbSelect = document.createElement('select');
     wbSelect.setAttribute('id', selectId);
     wbSelect.setAttribute('data-test-id', 'wb-select');
-    for (const tag of whiteboardConfig) {
+    for (const tag of tags) {
       const option = document.createElement('option');
       option.value = tag;
       option.textContent = tag;
       wbSelect.appendChild(option);
     }
 
+    whiteBoardInput.parentNode.appendChild(selectLabel);
     whiteBoardInput.parentNode.appendChild(wbSelect);
 
     // Build the button and add events.
     const button = document.createElement('button');
     button.setAttribute('id', buttonId);
-    button.textContent = 'Add Jira Whiteboard Tag';
+    button.textContent = 'Add';
     button.style.marginInlineStart = '1ex';
     button.onclick = function (e) {
       e.preventDefault();
@@ -265,7 +282,7 @@ export default class BZContent {
       checkExisting(e);
     };
 
-    const checkExisting = function (e) {
+    const checkExisting = function () {
       if (whiteBoardInput.value.includes(wbSelect.value)) {
         button.setAttribute('disabled', true);
       } else {
@@ -273,7 +290,7 @@ export default class BZContent {
       }
     };
 
-    whiteBoardInput.addEventListener('input', checkExisting, { once: true });
+    whiteBoardInput.addEventListener('input', checkExisting);
     wbSelect.oninput = checkExisting;
     whiteBoardInput.parentNode.appendChild(button);
     checkExisting();
