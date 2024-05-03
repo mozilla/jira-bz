@@ -38,16 +38,44 @@ async function setComponentSelect(componentId) {
   return componentSelect;
 }
 
+async function setUpInitialWhiteboardTagData() {
+  await setClassificationSelect(CLASSIFICATION_COMPONENTS);
+  expect(await screen.findByShadowText(/Toolkit/)).toBeInTheDocument();
+
+  await setProductSelect(PRODUCT_TOOLKIT);
+  // Should be able to find the UI Widgets option
+  expect(await screen.findByShadowText(/UI Widgets/)).toBeInTheDocument();
+
+  // Setup a response from the cache lookup.
+  browser.storage.local.get.mockResolvedValue({
+    tag_487: ['[project-whatever]'],
+  });
+
+  await setComponentSelect(COMPONENT_UI_WIDGETS);
+
+  // mock browser.storage.local
+  expect(browser.storage.local.get).toHaveBeenCalledWith('tag_487');
+  expect(
+    await screen.findByShadowDisplayValue('[project-whatever]'),
+  ).toBeInTheDocument();
+}
+
 describe('Options', () => {
   let optionsElement;
 
   beforeEach(async () => {
+    jest.useFakeTimers();
     jest.resetModules();
     // Clear the doc in between tests.
     document.body.innerHTML = '';
     optionsElement = document.createElement('ext-options');
     document.body.appendChild(optionsElement);
     await optionsElement.updateComplete;
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   it('should render Classification, Product and Component Select Labels', async () => {
@@ -91,47 +119,11 @@ describe('Options', () => {
   });
 
   it('should request cache data for the relevant classification, product + component selection', async () => {
-    await setClassificationSelect(CLASSIFICATION_COMPONENTS);
-    expect(await screen.findByShadowText(/Toolkit/)).toBeInTheDocument();
-
-    await setProductSelect(PRODUCT_TOOLKIT);
-    // Should be able to find the UI Widgets option
-    expect(await screen.findByShadowText(/UI Widgets/)).toBeInTheDocument();
-
-    // Setup a response from the cache lookup.
-    browser.storage.local.get.mockResolvedValue({
-      tag_487: ['[project-whatever]'],
-    });
-
-    await setComponentSelect(COMPONENT_UI_WIDGETS);
-
-    // mock browser.storage.local
-    expect(browser.storage.local.get).toHaveBeenCalledWith('tag_487');
-    expect(
-      await screen.findByShadowDisplayValue('[project-whatever]'),
-    ).toBeInTheDocument();
+    await setUpInitialWhiteboardTagData();
   });
 
   it('should store data to the cache when saved', async () => {
-    await setClassificationSelect(CLASSIFICATION_COMPONENTS);
-    expect(await screen.findByShadowText(/Toolkit/)).toBeInTheDocument();
-
-    await setProductSelect(PRODUCT_TOOLKIT);
-    // Should be able to find the UI Widgets option
-    expect(await screen.findByShadowText(/UI Widgets/)).toBeInTheDocument();
-
-    // Setup a response from the cache lookup.
-    browser.storage.local.get.mockResolvedValue({
-      tag_487: ['[project-whatever]'],
-    });
-
-    await setComponentSelect(COMPONENT_UI_WIDGETS);
-
-    // mock browser.storage.local
-    expect(browser.storage.local.get).toHaveBeenCalledWith('tag_487');
-    expect(
-      await screen.findByShadowDisplayValue('[project-whatever]'),
-    ).toBeInTheDocument();
+    await setUpInitialWhiteboardTagData();
 
     const addButton = await screen.findByShadowText(/➕Add/);
     // Click the Add button to add a new input.
@@ -157,25 +149,7 @@ describe('Options', () => {
   });
 
   it('should have a disabled save button by default', async () => {
-    await setClassificationSelect(CLASSIFICATION_COMPONENTS);
-    expect(await screen.findByShadowText(/Toolkit/)).toBeInTheDocument();
-
-    await setProductSelect(PRODUCT_TOOLKIT);
-    // Should be able to find the UI Widgets option
-    expect(await screen.findByShadowText(/UI Widgets/)).toBeInTheDocument();
-
-    // Setup a response from the cache lookup.
-    browser.storage.local.get.mockResolvedValue({
-      tag_487: ['[project-test]'],
-    });
-
-    await setComponentSelect(COMPONENT_UI_WIDGETS);
-
-    // mock browser.storage.local
-    expect(browser.storage.local.get).toHaveBeenCalledWith('tag_487');
-    expect(
-      await screen.findByShadowDisplayValue('[project-test]'),
-    ).toBeInTheDocument();
+    await setUpInitialWhiteboardTagData();
 
     const saveButton = await screen.findByShadowText('Save Whiteboard Tags');
     expect(saveButton).toBeInTheDocument();
@@ -198,6 +172,83 @@ describe('Options', () => {
     // Button should not be disabled any more.
     await waitFor(async () => {
       expect(saveButton).not.toBeDisabled();
+    });
+  });
+
+  it('should show a saved message on save and that should dissappear', async () => {
+    await setUpInitialWhiteboardTagData();
+
+    const addButton = await screen.findByShadowText(/➕Add/);
+    // Click the Add button to add a new input.
+    addButton.dispatchEvent(new Event('click'));
+
+    let newInputs;
+    // Need to wait for the the second input to appear before we try to update its value.
+    await waitFor(async () => {
+      newInputs = await screen.findAllByShadowPlaceholderText(
+        '[project-anything-else]',
+      );
+      expect(newInputs.length).toBe(2);
+    });
+
+    newInputs[1].value = '[project-something]';
+
+    const saveButton = await screen.findByShadowText(/Save Whiteboard Tags/);
+    saveButton.dispatchEvent(new Event('click'));
+
+    let savedMessage;
+    await waitFor(async () => {
+      savedMessage = await screen.findByShadowText(/Whiteboard Tags Saved/);
+      expect(savedMessage).toBeInTheDocument();
+    });
+
+    // Fast-forward until all timers have been executed
+    jest.runAllTimers();
+
+    await waitFor(() => {
+      expect(savedMessage).not.toBeInTheDocument();
+    });
+  });
+
+  it('should have a way to remove a 2nd tag', async () => {
+    await setUpInitialWhiteboardTagData();
+
+    const saveButton = await screen.findByShadowText('Save Whiteboard Tags');
+    expect(saveButton).toBeInTheDocument();
+    expect(saveButton.getAttribute('disabled')).toBe('');
+
+    const addButton = await screen.findByShadowText('➕Add');
+    addButton.dispatchEvent(new Event('click'));
+
+    let newInputs;
+    await waitFor(async () => {
+      newInputs = await screen.findAllByShadowPlaceholderText(
+        '[project-anything-else]',
+      );
+      expect(newInputs.length).toBe(2);
+    });
+
+    newInputs[1].value = '[whatever]';
+    newInputs[1].dispatchEvent(new Event('keyup'));
+
+    // Button should not be disabled any more.
+    await waitFor(async () => {
+      expect(saveButton).not.toBeDisabled();
+    });
+
+    const deleteButtons = await screen.findAllByShadowText(/Delete/);
+    expect(deleteButtons.length).toBe(2);
+
+    // click the first button
+    deleteButtons[1].dispatchEvent(new Event('click'));
+
+    // Should only be 1 input left now.
+    let newInputs2;
+    await waitFor(async () => {
+      newInputs2 = await screen.findAllByShadowPlaceholderText(
+        '[project-anything-else]',
+      );
+      expect(newInputs2.length).toBe(1);
     });
   });
 });

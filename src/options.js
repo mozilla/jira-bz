@@ -201,6 +201,7 @@ export class Options extends LitElement {
       }, 5000);
     } catch (e) {
       this._tagsSaved = false;
+      console.error(e);
     }
   }
 
