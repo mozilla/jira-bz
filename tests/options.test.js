@@ -155,4 +155,49 @@ describe('Options', () => {
       tag_487: ['[project-whatever]', '[project-something]'],
     });
   });
+
+  it('should have a disabled save button by default', async () => {
+    await setClassificationSelect(CLASSIFICATION_COMPONENTS);
+    expect(await screen.findByShadowText(/Toolkit/)).toBeInTheDocument();
+
+    await setProductSelect(PRODUCT_TOOLKIT);
+    // Should be able to find the UI Widgets option
+    expect(await screen.findByShadowText(/UI Widgets/)).toBeInTheDocument();
+
+    // Setup a response from the cache lookup.
+    browser.storage.local.get.mockResolvedValue({
+      tag_487: ['[project-test]'],
+    });
+
+    await setComponentSelect(COMPONENT_UI_WIDGETS);
+
+    // mock browser.storage.local
+    expect(browser.storage.local.get).toHaveBeenCalledWith('tag_487');
+    expect(
+      await screen.findByShadowDisplayValue('[project-test]'),
+    ).toBeInTheDocument();
+
+    const saveButton = await screen.findByShadowText('Save Whiteboard Tags');
+    expect(saveButton).toBeInTheDocument();
+    expect(saveButton.getAttribute('disabled')).toBe('');
+
+    const addButton = await screen.findByShadowText('➕Add');
+    addButton.dispatchEvent(new Event('click'));
+
+    let newInputs;
+    await waitFor(async () => {
+      newInputs = await screen.findAllByShadowPlaceholderText(
+        '[project-anything-else]',
+      );
+      expect(newInputs.length).toBe(2);
+    });
+
+    newInputs[1].value = '[whatever]';
+    newInputs[1].dispatchEvent(new Event('keyup'));
+
+    // Button should not be disabled any more.
+    await waitFor(async () => {
+      expect(saveButton).not.toBeDisabled();
+    });
+  });
 });
